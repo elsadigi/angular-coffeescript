@@ -1,0 +1,59 @@
+md-toolbar(class="md-table-toolbar md-default" ng-show="!listCtrl.selected.length && !listCtrl.query.search.active")
+    div(class="md-toolbar-tools")
+        span.table-title {{ listCtrl.pageTitle | translate }}
+        span.page-description {{ listCtrl.pageDescription | translate }}
+        div(class="flex")
+        md-button(class="md-icon-button" ng-click="action.action()" ng-repeat='action in listCtrl.tableActions' ng-show='listCtrl.tableActions.length' )
+            md-icon {{action.icon}}
+        md-button(class="md-icon-button" ng-click="listCtrl.openSearch()" ng-show="listCtrl.isSearchable")
+            md-icon search
+        md-button(class="md-icon-button" ng-click="listCtrl.openAddDialog()" ng-show="listCtrl.isCreatable")
+            md-icon add
+
+md-toolbar(class="md-table-toolbar md-default search-toolbar" ng-show="listCtrl.query.search.active && !listCtrl.selected.length")
+    div(class="md-toolbar-tools")
+        span(class="md-icon-button")
+            md-icon search
+        md-input-container(flex md-no-float layout-align="center center")
+            input(ng-model="listCtrl.query.search.query" ng-model-options="listCtrl.query.search.options" ng-change="listCtrl.load()" placeholder="{{ 'search' | translate | ucfirst }}" class='search-input')
+        md-button(class="md-icon-button" ng-click="listCtrl.closeSearch()")
+            md-icon close
+
+md-toolbar(class="md-table-toolbar alternate md-warn" ng-show="listCtrl.selected.length")
+    div(class="md-toolbar-tools")
+        span {{listCtrl.selected.length}} {{listCtrl.selected.length > 1 ? "items" : "item"}} {{'selected' | translate | ucfirst }}
+        div(class="flex")
+        md-button(class="md-icon-button" ng-csv="listCtrl.getCsvContent()" csv-header="listCtrl.getCsvHeader()" filename="{{ listCtrl.pageTitle }}.csv" ng-show="listCtrl.isPrintable")
+            md-icon file_download
+        md-button(class="md-icon-button" ng-click="listCtrl.deleteSelected()" ng-show="listCtrl.isDeletable")
+            md-icon delete
+
+md-table-container
+    table(md-table data-md-row-select='true' data-ng-model="listCtrl.selected" md-progress="listCtrl.promise" ng-init="listCtrl.load()")
+        thead(md-head md-order="listCtrl.query.sort" md-on-reorder="listCtrl.onReorder" )
+            tr(md-row)
+                th(md-column class="expand-column-header")
+                th(md-column ng-attr-md-order-by="{{sRow.sort}}" ng-repeat="sRow in listCtrl.schema | filter: { hideInList: '!' + true}")
+                    span {{sRow.title | translate }}
+                th(md-column ng-show="listCtrl.isEditable" )
+                    span {{'app.edit' | translate }}
+        tbody(md-body)
+            tr(md-row md-select="row" ng-repeat-start="row in listCtrl.items")
+                td(md-cell)
+                    md-button(class="md-icon-button" ng-click="listCtrl.showInlineDetail(row)")
+                        md-icon(ng-show="row.expanded") expand_less
+                        md-icon(ng-show="!row.expanded") expand_more
+                td(md-cell ng-repeat="sRow in listCtrl.schema | filter: { hideInList:  '!' + true}")
+                    span(ng-bind-html="listCtrl.getValue(row, sRow.key, listCtrl.isDefined(sRow.multiple), sRow.type)")
+                td(md-cell)
+                    md-button(class="md-icon-button" ng-click="listCtrl.openEditDialog(row)" ng-show="listCtrl.isEditable")
+                        md-icon edit
+                        md-tooltip {{ 'app.edit' | translate }}
+                    md-button(class="md-icon-button" ng-click="action.action(row.id)" ng-repeat='action in listCtrl.extraActions')
+                        md-icon {{action.icon}}
+                        md-tooltip {{ action.text }}
+            tr(ng-repeat-end="" ng-class="{'hidden-expanded-row': !row.expanded}")
+                td(colspan="12")
+                    div(ng-include="listCtrl.getDetailTemplate()")
+
+md-table-pagination(md-page-select md-boundary-links="true" md-limit="listCtrl.query.limit" md-page="listCtrl.query.page" md-total="{{listCtrl.items.count}}" md-on-paginate="listCtrl.onPaginate"  md-options="[10, 25, 50, 75]")

@@ -1,0 +1,14 @@
+md-content(class="list-detail-data")
+  md-list
+    md-list-item(class="md-2-line list-detail-item" ng-repeat="sRow in listCtrl.schema | filter: { hideInDetail:  '!' + true}" ng-class-even="'even-list-item'" ng-class-odd="'odd-list-item'")
+      div(class="md-list-item-text")
+        h3 {{ sRow.title }}
+        p {{ listCtrl.getValue(row, sRow.key, listCtrl.isDefined(sRow.multiple), sRow.type) }}
+  
+  md-content(class="list-detail-actions")
+    md-button(class="md-button" ng-click="listCtrl.openEditDialog(row)" ng-show="listCtrl.isEditable")
+      md-icon edit
+      span {{ 'app.edit' | translate }}
+    md-button(class="md-button" ng-click="action.action(row.id)" ng-repeat='action in listCtrl.extraActions')
+      md-icon {{action.icon}}
+      span {{ action.text }}
